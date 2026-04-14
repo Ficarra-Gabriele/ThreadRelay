@@ -8,6 +8,12 @@ package threadrelay;
  *
  * @author ficarra.gabriele
  */
-public class Atleta extends Thread{
-    
+public class Atleta extends Thread {
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(i);
+        }
+    }
 }

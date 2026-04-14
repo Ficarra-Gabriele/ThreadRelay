@@ -9,5 +9,10 @@ package threadrelay;
  * @author ficarra.gabriele
  */
 public class Gestore {
+
+    private Atleta a1 = new Atleta();
+    private Atleta a2 = new Atleta();
+    private Atleta a3 = new Atleta();
+    private Atleta a4 = new Atleta();
     
 }
