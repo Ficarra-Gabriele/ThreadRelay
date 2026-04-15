@@ -1,0 +1,34 @@
+---
+config:
+  theme: dark
+  layout: elk
+---
+classDiagram
+direction RL
+    class Staffetta {
+    }
+
+    class Atleta {
+	    -Staffetta staffetta
+	    -int metri
+	    +Atleta(Staffetta staffetta)
+	    +run()
+	    +getMetri() int
+    }
+
+    class Gestore {
+	    -Staffetta s
+	    -Atleta a1
+	    -Atleta a2
+	    -Atleta a3
+	    -Atleta a4
+	    +Partenza()
+	    -sogliaRaggiunta(Atleta a, int soglia)
+    }
+
+    class Thread {
+    }
+
+    Thread <|-- Atleta
+    Atleta o-- Staffetta
+    Gestore o-- Atleta
