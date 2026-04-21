@@ -15,8 +15,6 @@ public class ThreadRelay {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        
-        //Ci metto la classe staffetta?
     }
     
 }

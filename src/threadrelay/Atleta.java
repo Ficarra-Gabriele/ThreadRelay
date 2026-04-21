@@ -10,10 +10,29 @@ package threadrelay;
  */
 public class Atleta extends Thread {
 
+    private int metri = 0;
+    private Staffetta s1;
+
+    public Atleta(Staffetta s1) {
+        this.s1 = s1;
+    }
+
     @Override
     public void run() {
-        for (int i = 0; i < 100; i++) {
-            System.out.println(i);
+        while (metri < 100) {
+            metri++;
+            try {
+                Thread.sleep(50);
+                System.out.println(metri);
+            } catch (InterruptedException ex) {
+                System.err.println("thread non lanciato");
+            }
         }
+
     }
+
+    public int getMetriPercorsi() {
+        return metri;
+    }
+
 }
