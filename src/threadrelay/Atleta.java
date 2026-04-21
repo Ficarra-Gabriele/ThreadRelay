@@ -31,7 +31,7 @@ public class Atleta extends Thread {
 
     }
 
-    public int getMetriPercorsi() {
+    public int getMetri() {
         return metri;
     }
 

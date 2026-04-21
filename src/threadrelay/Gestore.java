@@ -16,5 +16,28 @@ public class Gestore {
     private Atleta a3 = new Atleta(s1);
     private Atleta a4 = new Atleta(s1);
     
-    
+    public void avviaGara() {
+        a1.start();
+        attendiSoglia(a1, 90);
+       
+        a2.start();
+        attendiSoglia(a1, 100);
+        attendiSoglia(a2, 90);
+
+        a3.start();
+        attendiSoglia(a2, 100);
+        attendiSoglia(a3, 90);
+
+        a4.start();
+        attendiSoglia(a3, 100);
+        attendiSoglia(a4, 100);
+    }
+
+    private void attendiSoglia(Atleta a, int soglia) {
+        while (a.getMetri() < soglia) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {}
+        }
+    }  
 }
