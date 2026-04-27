@@ -4,19 +4,169 @@
  */
 package threadrelay;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  *
  * @author ironm
  */
 public class StaffettaVisual extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(StaffettaVisual.class.getName());
 
-    /**
-     * Creates new form Visual
-     */
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(StaffettaVisual.class.getName());
+    
+    private Corsia[] corsie = new Corsia[4];
+    private JComboBox<String> cVelocita;
+    private JButton btnAvvia, btnSospende, btnRiprende, btnFerma;
+    private Thread garaThread;
+
     public StaffettaVisual() {
-        initComponents();
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout(10, 10));
+
+        creaAreaGara();
+        creaBarraControlli();
+        setStatoBottoni(true);
+    }
+
+    private void creaAreaGara() {
+        JPanel panelCentrale = new JPanel(new GridLayout(4, 1, 0, 10));
+        panelCentrale.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panelCentrale.setBackground(new Color(50, 50, 50));
+
+        for (int i = 0; i < 4; i++) {
+            corsie[i] = new Corsia("Runner " + (i + 1));
+            panelCentrale.add(corsie[i]);
+        }
+        add(panelCentrale, BorderLayout.CENTER);
+    }
+
+    private void creaBarraControlli() {
+        JPanel panelControlli = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        panelControlli.setBackground(new Color(230, 230, 230));
+        panelControlli.setBorder(BorderFactory.createRaisedBevelBorder());
+
+        panelControlli.add(new JLabel("Velocità:"));
+        cVelocita = new JComboBox<>(new String[]{"Slow", "Regular", "Fast"});
+        cVelocita.setSelectedIndex(1);
+        panelControlli.add(cVelocita);
+
+        btnAvvia = new JButton("Avvia");
+        btnSospende = new JButton("Sospende");
+        btnRiprende = new JButton("Riprende");
+        btnFerma = new JButton("Ferma");
+
+        Dimension btnDim = new Dimension(100, 35);
+        for (JButton b : new JButton[]{btnAvvia, btnSospende, btnRiprende, btnFerma}) {
+            b.setPreferredSize(btnDim);
+            panelControlli.add(b);
+        }
+
+        btnAvvia.addActionListener(e -> avviaSimulazione());
+        btnSospende.addActionListener(e -> sospendiSimulazione());
+        btnRiprende.addActionListener(e -> riprendiSimulazione());
+        btnFerma.addActionListener(e -> fermaSimulazione());
+
+        add(panelControlli, BorderLayout.SOUTH);
+    }
+
+    private void setStatoBottoni(boolean inattesa) {
+        btnAvvia.setEnabled(inattesa);
+        cVelocita.setEnabled(inattesa);
+        btnSospende.setEnabled(!inattesa);
+        btnRiprende.setEnabled(false);
+        btnFerma.setEnabled(!inattesa);
+    }
+
+    private void avviaSimulazione() {
+        setStatoBottoni(false);
+        for (Corsia c : corsie) {
+            c.setProgresso(0);
+        }
+        System.out.println("Gara avviata a velocità: " + cVelocita.getSelectedItem());
+    }
+
+    private void sospendiSimulazione() {
+        btnSospende.setEnabled(false);
+        btnRiprende.setEnabled(true);
+    }
+
+    private void riprendiSimulazione() {
+        btnSospende.setEnabled(true);
+        btnRiprende.setEnabled(false);
+    }
+
+    private void fermaSimulazione() {
+        setStatoBottoni(true);
+    }
+
+    private class Corsia extends JPanel {
+
+        private int progresso = 0;
+        private String nomeRunner;
+        private JLabel lblInfo;
+        private JPanel areaPista;
+
+        public Corsia(String nome) {
+            this.nomeRunner = nome;
+            setLayout(new BorderLayout());
+            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+
+            areaPista = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    g.setColor(new Color(220, 220, 220));
+                    for (int i = 0; i < areaPista.getWidth(); i += 50) {
+                        g.drawLine(i, 0, i, getHeight());
+                    }
+                    drawRunner(g);
+                }
+            };
+            areaPista.setBackground(new Color(245, 245, 245));
+
+            JPanel panelInfo = new JPanel(new GridLayout(2, 1));
+            panelInfo.setPreferredSize(new Dimension(150, 0));
+            panelInfo.setBackground(new Color(240, 240, 240));
+            panelInfo.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, Color.GRAY));
+
+            JLabel lblNome = new JLabel(nomeRunner, SwingConstants.CENTER);
+            lblNome.setFont(new Font("SansSerif", Font.BOLD, 14));
+            lblInfo = new JLabel("Metri: 0", SwingConstants.CENTER);
+            lblInfo.setFont(new Font("Monospaced", Font.PLAIN, 14));
+
+            panelInfo.add(lblNome);
+            panelInfo.add(lblInfo);
+
+            add(areaPista, BorderLayout.CENTER);
+            add(panelInfo, BorderLayout.EAST);
+        }
+
+        private void drawRunner(Graphics g) {
+            int widthPista = areaPista.getWidth() - 50;
+            int x = (int) ((progresso / 99.0) * widthPista);
+            int y = areaPista.getHeight() / 2 - 15;
+
+            g.setColor(new Color(200, 0, 0));
+            g.fillOval(x, y, 30, 30);
+
+            g.setColor(Color.WHITE);
+            g.drawString("🏃", x + 10, y + 20);
+        }
+
+        public void setProgresso(int p) {
+            this.progresso = p;
+            if (p >= 99) {
+                lblInfo.setText("FINE");
+                lblInfo.setForeground(new Color(0, 150, 0));
+            } else {
+                lblInfo.setText("Metri: " + p);
+                lblInfo.setForeground(Color.BLACK);
+            }
+            repaint();
+        }
     }
 
     /**
