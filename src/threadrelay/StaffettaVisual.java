@@ -14,11 +14,12 @@ import java.awt.*;
 public class StaffettaVisual extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(StaffettaVisual.class.getName());
-    
+
     private Corsia[] corsie = new Corsia[4];
     private JComboBox<String> cVelocita;
     private JButton btnAvvia, btnSospende, btnRiprende, btnFerma;
     private Thread garaThread;
+    private Atleta[] atleti = new Atleta[4];
 
     public StaffettaVisual() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -58,7 +59,8 @@ public class StaffettaVisual extends javax.swing.JFrame {
         btnFerma = new JButton("Ferma");
 
         Dimension btnDim = new Dimension(100, 35);
-        for (JButton b : new JButton[]{btnAvvia, btnSospende, btnRiprende, btnFerma}) {
+        JButton[] bottoni = {btnAvvia, btnSospende, btnRiprende, btnFerma};
+        for (JButton b : bottoni) {
             b.setPreferredSize(btnDim);
             panelControlli.add(b);
         }
@@ -81,27 +83,98 @@ public class StaffettaVisual extends javax.swing.JFrame {
 
     private void avviaSimulazione() {
         setStatoBottoni(false);
-        for (Corsia c : corsie) {
-            c.setProgresso(0);
+
+        int v = 50;
+        String sel = (String) cVelocita.getSelectedItem();
+        if (sel.equals("Slow")) {
+            v = 100;
         }
-        System.out.println("Gara avviata a velocità: " + cVelocita.getSelectedItem());
+        if (sel.equals("Regular")) {
+            v = 50;
+        }
+        if (sel.equals("Fast")) {
+            v = 10;
+        }
+
+        int velFinale = v;
+
+        for (int i = 0; i < 4; i++) {
+            corsie[i].setProgresso(0);
+            atleti[i] = new Atleta(corsie[i]);
+            atleti[i].setVelocita(velFinale);
+        }
+
+        garaThread = new Thread(() -> {
+            try {
+                atleti[0].start();
+                while (atleti[0].getMetri() < 90) {
+                    Thread.sleep(10);
+                }
+
+                atleti[1].start();
+                while (atleti[0].getMetri() < 99) {
+                    Thread.sleep(10);
+                }
+                while (atleti[1].getMetri() < 90) {
+                    Thread.sleep(10);
+                }
+
+                atleti[2].start();
+                while (atleti[1].getMetri() < 99) {
+                    Thread.sleep(10);
+                }
+                while (atleti[2].getMetri() < 90) {
+                    Thread.sleep(10);
+                }
+
+                atleti[3].start();
+                while (atleti[2].getMetri() < 99) {
+                    Thread.sleep(10);
+                }
+                while (atleti[3].getMetri() < 99) {
+                    Thread.sleep(10);
+                }
+
+                fermaSimulazione();
+            } catch (InterruptedException e) {
+            }
+        });
+        garaThread.start();
     }
 
     private void sospendiSimulazione() {
         btnSospende.setEnabled(false);
         btnRiprende.setEnabled(true);
+        for (Atleta a : atleti) {
+            if (a != null) {
+                a.sospendi();
+            }
+        }
     }
 
     private void riprendiSimulazione() {
         btnSospende.setEnabled(true);
         btnRiprende.setEnabled(false);
+        for (Atleta a : atleti) {
+            if (a != null) {
+                a.riprendi();
+            }
+        }
     }
 
     private void fermaSimulazione() {
-        setStatoBottoni(true);
+        if (garaThread != null) {
+            garaThread.interrupt();
+        }
+        for (Atleta a : atleti) {
+            if (a != null) {
+                a.interrupt();
+            }
+        }
+        SwingUtilities.invokeLater(() -> setStatoBottoni(true));
     }
 
-    private class Corsia extends JPanel {
+    public class Corsia extends JPanel {
 
         private int progresso = 0;
         private String nomeRunner;
@@ -122,7 +195,13 @@ public class StaffettaVisual extends javax.swing.JFrame {
                     for (int i = 0; i < areaPista.getWidth(); i += 50) {
                         g.drawLine(i, 0, i, getHeight());
                     }
-                    drawRunner(g);
+                    int widthPista = areaPista.getWidth() - 50;
+                    int x = (int) ((progresso / 99.0) * widthPista);
+                    int y = areaPista.getHeight() / 2 - 15;
+                    g.setColor(new Color(200, 0, 0));
+                    g.fillOval(x, y, 30, 30);
+                    g.setColor(Color.WHITE);
+                    g.drawString("🏃", x + 10, y + 20);
                 }
             };
             areaPista.setBackground(new Color(245, 245, 245));
@@ -130,7 +209,6 @@ public class StaffettaVisual extends javax.swing.JFrame {
             JPanel panelInfo = new JPanel(new GridLayout(2, 1));
             panelInfo.setPreferredSize(new Dimension(150, 0));
             panelInfo.setBackground(new Color(240, 240, 240));
-            panelInfo.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, Color.GRAY));
 
             JLabel lblNome = new JLabel(nomeRunner, SwingConstants.CENTER);
             lblNome.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -142,18 +220,6 @@ public class StaffettaVisual extends javax.swing.JFrame {
 
             add(areaPista, BorderLayout.CENTER);
             add(panelInfo, BorderLayout.EAST);
-        }
-
-        private void drawRunner(Graphics g) {
-            int widthPista = areaPista.getWidth() - 50;
-            int x = (int) ((progresso / 99.0) * widthPista);
-            int y = areaPista.getHeight() / 2 - 15;
-
-            g.setColor(new Color(200, 0, 0));
-            g.fillOval(x, y, 30, 30);
-
-            g.setColor(Color.WHITE);
-            g.drawString("🏃", x + 10, y + 20);
         }
 
         public void setProgresso(int p) {
