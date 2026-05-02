@@ -16,12 +16,8 @@ public class Atleta extends Thread implements Subject {
     private volatile int metri = 0;
     private int velocita = 50;
     private boolean inPausa = false;
-    private StaffettaVisual.Corsia corsia;
     private List<Observer> observers = new ArrayList<>();
 
-    public Atleta(StaffettaVisual.Corsia corsia) {
-        this.corsia = corsia;
-    }
 
     public void setVelocita(int v) {
         this.velocita = v;

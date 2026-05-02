@@ -96,12 +96,12 @@ public class StaffettaVisual extends javax.swing.JFrame {
             v = 10;
         }
 
-        int velFinale = v;
-
         for (int i = 0; i < 4; i++) {
-            corsie[i].setProgresso(0);
-            atleti[i] = new Atleta(corsie[i]);
-            atleti[i].setVelocita(velFinale);
+            corsie[i].update(0);
+            atleti[i] = new Atleta();
+            atleti[i].setVelocita(v);
+            atleti[i].setDaemon(true);
+            atleti[i].addObserver(corsie[i]);
         }
 
         garaThread = new Thread(() -> {
@@ -137,6 +137,7 @@ public class StaffettaVisual extends javax.swing.JFrame {
 
                 fermaSimulazione();
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         });
         garaThread.start();
@@ -174,7 +175,7 @@ public class StaffettaVisual extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> setStatoBottoni(true));
     }
 
-    public class Corsia extends JPanel {
+    public class Corsia extends JPanel implements Observer {
 
         private int progresso = 0;
         private String nomeRunner;
@@ -183,6 +184,10 @@ public class StaffettaVisual extends javax.swing.JFrame {
 
         public Corsia(String nome) {
             this.nomeRunner = nome;
+            setupUI();
+        }
+
+        private void setupUI() {
             setLayout(new BorderLayout());
             setBackground(Color.WHITE);
             setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
@@ -222,16 +227,19 @@ public class StaffettaVisual extends javax.swing.JFrame {
             add(panelInfo, BorderLayout.EAST);
         }
 
-        public void setProgresso(int p) {
-            this.progresso = p;
-            if (p >= 99) {
-                lblInfo.setText("FINE");
-                lblInfo.setForeground(new Color(0, 150, 0));
-            } else {
-                lblInfo.setText("Metri: " + p);
-                lblInfo.setForeground(Color.BLACK);
-            }
-            repaint();
+        @Override
+        public void update(int valore) {
+            SwingUtilities.invokeLater(() -> {
+                this.progresso = valore;
+                if (valore >= 99) {
+                    lblInfo.setText("FINE");
+                    lblInfo.setForeground(new Color(0, 150, 0));
+                } else {
+                    lblInfo.setText("Metri: " + valore);
+                    lblInfo.setForeground(Color.BLACK);
+                }
+                repaint();
+            });
         }
     }
 
