@@ -51,7 +51,7 @@ public class Atleta extends Thread implements Subject {
 
             if (!isInterrupted()) {
                 metri++;
-                corsia.setProgresso(metri);
+                notifyObservers();
                 try {
                     Thread.sleep(velocita);
                 } catch (InterruptedException ex) {
@@ -67,13 +67,27 @@ public class Atleta extends Thread implements Subject {
 
     @Override
     public synchronized void addObserver(Observer o) {
+        if (!observers.contains(o)) {
+            observers.add(o);
+        }
     }
 
     @Override
     public synchronized void removeObserver(Observer o) {
+        observers.remove(o);
     }
 
     @Override
     public void notifyObservers() {
+        
+        List<Observer> copia;
+        
+        synchronized (this) {
+            copia = new ArrayList<>(observers);
+        }
+
+        for (Observer o : copia) {
+            o.update(metri);
+        }
     }
 }
