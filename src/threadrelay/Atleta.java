@@ -4,17 +4,20 @@
  */
 package threadrelay;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author ficarra.gabriele
  */
+public class Atleta extends Thread implements Subject {
 
-public class Atleta extends Thread {
-
-    private int metri = 0;
+    private volatile int metri = 0;
     private int velocita = 50;
     private boolean inPausa = false;
     private StaffettaVisual.Corsia corsia;
+    private List<Observer> observers = new ArrayList<>();
 
     public Atleta(StaffettaVisual.Corsia corsia) {
         this.corsia = corsia;
@@ -23,16 +26,16 @@ public class Atleta extends Thread {
     public void setVelocita(int v) {
         this.velocita = v;
     }
-    
+
     public synchronized void sospendi() {
         inPausa = true;
     }
 
     public synchronized void riprendi() {
         inPausa = false;
-        notify(); 
+        notify();
     }
-    
+
     @Override
     public void run() {
         while (metri < 100 && !isInterrupted()) {
@@ -41,7 +44,7 @@ public class Atleta extends Thread {
                     try {
                         wait();
                     } catch (InterruptedException e) {
-                        interrupt(); 
+                        interrupt();
                     }
                 }
             }
@@ -60,5 +63,17 @@ public class Atleta extends Thread {
 
     public int getMetri() {
         return metri;
+    }
+
+    @Override
+    public synchronized void addObserver(Observer o) {
+    }
+
+    @Override
+    public synchronized void removeObserver(Observer o) {
+    }
+
+    @Override
+    public void notifyObservers() {
     }
 }

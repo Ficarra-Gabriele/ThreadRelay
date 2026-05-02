@@ -9,4 +9,5 @@ package threadrelay;
  * @author ironm
  */
 public interface Observer {
+    void update(int valore);
 }
